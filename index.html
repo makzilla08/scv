@@ -103,7 +103,7 @@ async function resolve(u,label){
   try{
     const j=await resolveUrl(u);
     if(j.yt)playYT(j.yt);else play(j.src);
-    setNow(label,-1);document.getElementById('v').scrollIntoView();
+    if(CUR.idx<0)setNow(label,-1);document.getElementById('v').scrollIntoView();
   }catch(e){alert(e.message);}
 }
 let EP=[],ASC=true,CUR={label:'',idx:-1},EPTITLE='';
