@@ -104,7 +104,7 @@ async function resolve(u,label){
     const j=await resolveUrl(u);
     if(j.yt)playYT(j.yt);else play(j.src);
     if(CUR.idx<0)setNow(label,-1);document.getElementById('v').scrollIntoView();
-  }catch(e){alert(e.message);}
+  }catch(e){status('❌ เปิดไม่ได้: '+e.message.slice(0,80));alert(e.message);}
 }
 let EP=[],ASC=true,CUR={label:'',idx:-1},EPTITLE='';
 function setNow(l,i){CUR={label:l,idx:i};document.getElementById('nowbar').style.display='flex';
@@ -116,11 +116,13 @@ function stepEp(d){if(CUR.idx<0||!EP.length)return;const n=CUR.idx+d;if(n<0||n>=
 function toggleOrder(){ASC=!ASC;renderEps();}
 function fmtT(s){s=+s;return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')}
 function skipIntro(){const v=document.getElementById('v');v.currentTime=Math.min(v.currentTime+(+document.getElementById('skip').value),(v.duration||1e9)-2);}
+function status(t){let e=document.getElementById('status');if(!e){e=document.createElement('p');e.id='status';e.className='note';e.style.textAlign='center';document.getElementById('results').before(e);}e.textContent=t;}
 async function search(){
   const q=document.getElementById('q').value.trim();if(!q)return;
-  const html=await pGet(BASE+'/?s='+encodeURIComponent(q)).catch(()=>null);
   const g=document.getElementById('results');g.innerHTML='';
-  if(!html){g.innerHTML='<p class="note">ค้นหาไม่ได้ ลองใหม่</p>';return;}
+  status('🔎 กำลังค้นหา "'+q+'" ...');
+  const html=await pGet(BASE+'/?s='+encodeURIComponent(q)).catch(e=>'ERR:'+e.message);
+  if(!html||html.startsWith('ERR:')){status('❌ ค้นหาไม่ได้ ('+(html||'เน็ตขัดข้อง').slice(0,60)+') ลองกดค้นหาอีกครั้ง');return;}
   const doc=new DOMParser().parseFromString(html,'text/html');
   const seen=new Set();
   [...doc.querySelectorAll('article')].forEach(a=>{
@@ -133,7 +135,8 @@ async function search(){
     const t=document.createElement('div');t.textContent=title;
     d.appendChild(im);d.appendChild(t);d.onclick=()=>loadEps(url);g.appendChild(d);
   });
-  if(!g.children.length)g.innerHTML='<p class="note">ไม่เจอเรื่องที่ค้นหา</p>';
+  if(!g.children.length){g.innerHTML='<p class="note">ไม่เจอเรื่องที่ค้นหา</p>';status('😶 ไม่เจอเรื่องที่ชื่อมีคำว่า "'+q+'"');}
+  else status('✅ เจอ '+g.children.length+' เรื่อง — แตะที่ปกเพื่อดูรายการตอน');
   g.scrollIntoView();
 }
 async function loadEps(seriesUrl){
@@ -147,7 +150,7 @@ async function loadEps(seriesUrl){
   ASC=true;document.getElementById('epsec').style.display='block';
   document.getElementById('eptitle').textContent='📺 '+EPTITLE;
   document.getElementById('epcount').textContent='ทั้งหมด '+EP.length+' ตอน';
-  renderEps();document.getElementById('epsec').scrollIntoView();
+  renderEps();status('📺 "'+EPTITLE+'" มี '+EP.length+' ตอน — แตะปุ่มตอนเพื่อเล่น');document.getElementById('epsec').scrollIntoView();
 }
 function renderEps(){
   const list=ASC?EP:[...EP].reverse();
