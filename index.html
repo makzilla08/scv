@@ -84,6 +84,17 @@ async function resolveUrl(pageUrl){
   }
   throw new Error('เปิดเรื่องนี้ไม่ได้ ลองเรื่องอื่น');
 }
+async function animeindyDirect(emb){
+  const m=emb.match(/\/embed\/([\w-]+)/);
+  if(!m)return null;
+  const u='https://hls.animeindy.com:8443/vid/'+m[1]+'/video.mp4/playlist.m3u8';
+  try{
+    const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),15000);
+    const r=await fetch(u,{signal:ctl.signal});clearTimeout(to);
+    if(r.ok&&(await r.text()).includes('#EXTM3U'))return u;
+  }catch(e){}
+  return null;
+}
 function playYT(id){const v=document.getElementById('v');v.style.display='none';
   let f=document.getElementById('yt');
   if(!f){f=document.createElement('iframe');f.id='yt';f.style.cssText='width:100%;height:60vh;border:0;border-radius:14px';f.allowFullscreen=true;v.after(f);}
