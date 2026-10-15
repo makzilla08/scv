@@ -44,16 +44,18 @@ footer{text-align:center;color:#5a6778;font-size:12px;margin:24px 0}
 <footer>SCV Cloud • anime only • โหมดกรองโฆษณาอัตโนมัติในตัวเล่น</footer>
 <script src="https://cdn.jsdelivr.net/npm/hls.js@1"></script>
 <script>
-const PX='https://script.google.com/macros/s/AKfycbyg1yc4oZ-aLD4o4o_acjwM1CmxtCKGaRgYS1-gxLIHHe0hGVPgs-W7l1XNJUNqZ7L-rA/exec';
+const PX='https://script.google.com/macros/s/AKfycbyg1yc4oZ-aLD4o4o_acjwM1CmxtCKGaRgYS1-gxLIHHe0hGVPgs-W7l1XNJUNqZ7L-rA/exec?u=';
 const BASE='https://hit-anime.com';
 async function pGet(url){
   let last='?';
   try{const r=await fetch(url);if(r.ok)return r.text();}catch(e){last='direct';}
   for(const p of [PX,'https://cors.eu.org/']){
-    const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),20000);
+    const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),25000);
     try{const r=await fetch(p+url,{signal:ctl.signal});clearTimeout(to);if(r.ok)return r.text();last='proxy '+r.status;}
     catch(e){clearTimeout(to);last=e.message;}
   }
+  await new Promise(r=>setTimeout(r,2000));
+  try{const r2=await fetch(PX+url);if(r2.ok)return r2.text();}catch(e){}
   throw new Error(last);
 }
 function play(src){
